@@ -15,14 +15,22 @@ dependencies:
 
   override:
     - npm install -g phantomjs-prebuilt casperjs
-    - bash .circleci/build_oracle_12c.sh:
+    - bash .circleci/build_oracle_11g.sh:
         timeout: 1200
+    # - bash .circleci/build_oracle_12c.sh:
+    #     timeout: 1200
   
   cache_directories:
     - $CACHE_DIR
 
 test:
   override:
-    - docker load < $CACHE_DIR/oracle-12c.tar
-    - docker run -d --privileged --name oracle-12c -p 1521:1521 oracle-12c-prebuilt
-    - docker logs -f oracle-12c | grep -m 1 "DATABASE IS READY TO USE!" --line-buffered
+    - docker load < $CACHE_DIR/oracle-11g.tar
+    - docker run -d --privileged --shm-size=1g --name oracle-11g -p 1521:1521 oracle-11g-prebuilt
+    - docker logs -f oracle-11g | grep -m 1 "DATABASE IS READY TO USE!" --line-buffered
+
+# test:
+#   override:
+#     - docker load < $CACHE_DIR/oracle-12c.tar
+#     - docker run -d --privileged --name oracle-12c -p 1521:1521 oracle-12c-prebuilt
+#     - docker logs -f oracle-12c | grep -m 1 "DATABASE IS READY TO USE!" --line-buffered

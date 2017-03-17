@@ -13,6 +13,11 @@ cd ./.circleci
 bash download.sh -p xe11g
 mv $ORACLE11g_FILE ./dockerfiles/11.2.0.2
 
+# Create Swap
+SWAPFILE=/mnt/sda1/swapfile
+sudo dd if=/dev/zero of=$SWAPFILE bs=1M count=2048
+sudo mkswap $SWAPFILE && sudo chmod 600 $SWAPFILE && sudo swapon $SWAPFILE
+
 # Build and Save Docker image
 cd ./dockerfiles/11.2.0.2
 docker build --rm=false -f Dockerfile.xe -t oracle-11g-install .
