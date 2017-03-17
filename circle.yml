@@ -16,6 +16,7 @@ dependencies:
   override:
     - npm install -g phantomjs-prebuilt casperjs
     - bash .circleci/build_oracle_12c.sh
+      timeout: 1200
   
   cache_directories:
     - $CACHE_DIR
