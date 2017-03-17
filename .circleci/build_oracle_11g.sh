@@ -15,7 +15,7 @@ mv $ORACLE11g_FILE ./dockerfiles/11.2.0.2
 
 # Create Swap
 df -B1 /dev/shm | awk 'END { if ($1 != "shmfs" && $1 != "tmpfs" || $2 < 2147483648) exit 1 }' ||
-  ( sudo rm -r /dev/shm && sudo mkdir /dev/shm && sudo mount -t tmpfs shmfs -o size=2G /dev/shm )
+  ( rm -r /dev/shm && mkdir /dev/shm && mount -t tmpfs shmfs -o size=2G /dev/shm )
 
 # Build and Save Docker image
 cd ./dockerfiles/11.2.0.2
