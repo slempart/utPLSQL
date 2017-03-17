@@ -1,0 +1,52 @@
+# https://circleci.com/docs/2.0/configuration-reference/
+# https://circleci.com/docs/2.0/building-docker-images/
+
+version: 2
+jobs:
+  build:
+    environment:
+      - WORKDIR: "/circleci"
+    working_directory: "/circleci"
+    docker:
+      - image: viniciusam/utplsql
+    steps:
+      - checkout
+      - setup_docker_engine
+
+      - run:
+          name: Download, Build and Save Oracle 11g to Cache
+          command: bash ${WORKDIR}/.circleci/build_oracle_11g.sh          
+      
+      - run:
+          name: Download, Build and Save Oracle 12c to Cache
+          command: bash ${WORKDIR}/.circleci/build_oracle_12c.sh
+
+      # - run:
+      #     name: Run Oracle 11g
+      #     command: |
+      #       cd ~/utplsql/.cache/
+      #       docker load < oracle-11g.tar
+      #       docker run -d --privileged --shm-size=1g --name oracle-11g -p 1521:1521 oracle-11g-prebuilt
+      #       docker logs -f oracle-11g | grep -m 1 "DATABASE IS READY TO USE!" --line-buffered
+
+      # - run:
+      #     name: Run Oracle 12c
+      #     command: |
+      #       cd ~/utplsql/.cache/
+      #       docker load < oracle-12c.tar
+      #       docker run -d --privileged --name oracle-12c -p 1521:1521 oracle-12c-prebuilt
+      #       docker logs -f oracle-12c | grep -m 1 "DATABASE IS READY TO USE!" --line-buffered
+
+      # - restore_cache:
+      #     key: projectname-{{ .Branch }}-{{ checksum "requirements/dev.txt" }}
+      # - run:
+      #     name: Install Dependencies
+      #     command: pip install -r requirements/dev.txt
+      # - save_cache:
+      #     key: projectname-{{ .Branch }}-{{ checksum "requirements/dev.txt" }}
+      #     paths:
+      #       - "~/.cache/pip"
+      #       - "/usr/local/lib/python3.6/site-packages"
+      # - run:
+      #     name: Run Tests
+      #     command: python manage.py test
