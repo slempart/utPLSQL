@@ -9,17 +9,19 @@ machine:
   environment:
     CACHE_DIR: "$HOME/.cache"
   
-  dependencies:
-    pre:
-      - mkdir -p $CACHE_DIR
-    post:
-      - npm install -g phantomjs-prebuilt casperjs
-      - $HOME/.circleci/build_oracle_12c.sh
-    cache_directories:
-      - $CACHE_DIR
+dependencies:
+  pre:
+    - mkdir -p $CACHE_DIR
 
-  test:
-    override:
-      - docker load < $CACHE_DIR/oracle-12c.tar
-      - docker run -d --privileged --name oracle-12c -p 1521:1521 oracle-12c-prebuilt
-      - docker logs -f oracle-12c | grep -m 1 "DATABASE IS READY TO USE!" --line-buffered
+  post:
+    - npm install -g phantomjs-prebuilt casperjs
+    - $HOME/.circleci/build_oracle_12c.sh
+  
+  cache_directories:
+    - $CACHE_DIR
+
+test:
+  override:
+    - docker load < $CACHE_DIR/oracle-12c.tar
+    - docker run -d --privileged --name oracle-12c -p 1521:1521 oracle-12c-prebuilt
+    - docker logs -f oracle-12c | grep -m 1 "DATABASE IS READY TO USE!" --line-buffered
