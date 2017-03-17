@@ -6,10 +6,10 @@ if [ -f $CACHE_DIR/oracle-11g.tar.gz ]; then
     exit 0
 fi
 
-cd $HOME/.circleci
+ORACLE11g_FILE=oracle-xe-11.2.0-1.0.x86_64.rpm.zip
 
 # Download Oracle 11g Install Files
-ORACLE11g_FILE=oracle-xe-11.2.0-1.0.x86_64.rpm.zip
+cd ./.circleci
 bash download.sh -p xe11g
 mv $ORACLE11g_FILE ./dockerfiles/11.2.0.2
 

@@ -13,9 +13,9 @@ dependencies:
   pre:
     - mkdir -p $CACHE_DIR
 
-  post:
+  override:
     - npm install -g phantomjs-prebuilt casperjs
-    - .circleci/build_oracle_12c.sh
+    - bash .circleci/build_oracle_12c.sh
   
   cache_directories:
     - $CACHE_DIR

@@ -6,11 +6,11 @@ if [ -f $CACHE_DIR/oracle-12c.tar.gz ]; then
     exit 0
 fi
 
-cd $HOME/.circleci
-
-# Download Oracle 12c Install Files
 ORACLE12c_FILE1=linuxamd64_12102_database_se2_1of2.zip
 ORACLE12c_FILE2=linuxamd64_12102_database_se2_2of2.zip
+
+# Download Oracle 12c Install Files
+cd ./.circleci
 bash download.sh -p se12c
 mv $ORACLE12c_FILE1 ./dockerfiles/12.1.0.2
 mv $ORACLE12c_FILE2 ./dockerfiles/12.1.0.2
