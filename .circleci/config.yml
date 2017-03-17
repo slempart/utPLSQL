@@ -16,9 +16,9 @@ jobs:
       - checkout
       - setup_docker_engine
 
-      - run:
-          name: Download, Build and Save Oracle 11g to Cache
-          command: bash ${WORKDIR}/.circleci/build_oracle_11g.sh
+      # - run:
+      #     name: Download, Build and Save Oracle 11g to Cache
+      #     command: bash ${WORKDIR}/.circleci/build_oracle_11g.sh
       
       - run:
           name: Download, Build and Save Oracle 12c to Cache
