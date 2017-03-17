@@ -17,7 +17,7 @@ mv $ORACLE12c_FILE2 ./dockerfiles/12.1.0.2
 
 # Build and Save Docker image
 cd ./dockerfiles/12.1.0.2
-docker build --rm=false -f Dockerfile.se2 -t oracle-12c-install .
+docker build -f Dockerfile.se2 --no-cache=true --force-rm=true -t oracle-12c-install .
 docker run -d --privileged --name oracle-12c-install -p 1521:1521 oracle-12c-install
 docker logs -f oracle-12c-install | grep -m 1 "DATABASE IS READY TO USE!" --line-buffered
 docker exec oracle-12c-install ./setPassword.sh oracle

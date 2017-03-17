@@ -19,7 +19,7 @@ df -B1 /dev/shm | awk 'END { if ($1 != "shmfs" && $1 != "tmpfs" || $2 < 21474836
 
 # Build and Save Docker image
 cd ./dockerfiles/11.2.0.2
-docker build --rm=false -f Dockerfile.xe -t oracle-11g-install .
+docker build -f Dockerfile.xe --no-cache=true --force-rm=true -t oracle-11g-install .
 docker run -d --privileged --shm-size=1g --name oracle-11g-install -p 1521:1521 oracle-11g-install
 docker logs -f oracle-11g-install | grep -m 1 "DATABASE IS READY TO USE!" --line-buffered
 docker exec oracle-11g-install ./setPassword.sh oracle
