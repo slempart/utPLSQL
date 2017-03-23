@@ -1,0 +1,9 @@
+- type: serial
+  encrypted_dockercfg_path: dockercfg.encrypted
+  steps:
+  - service: oracle-11g-xe-r2
+    command: sqlplus -v
+    encrypted_dockercfg_path: dockercfg.encrypted
+  - service: oracle-12c-se-r1
+    command: sqlplus -v
+    encrypted_dockercfg_path: dockercfg.encrypted
