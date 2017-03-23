@@ -1,4 +1,4 @@
-- type: serial
+- type: parallel
   encrypted_dockercfg_path: dockercfg.encrypted
   steps:
   - service: oracle-11g-xe-r2
