@@ -2,8 +2,14 @@
   encrypted_dockercfg_path: dockercfg.encrypted
   steps:
   - service: oracle-11g-xe-r2
-    command: sqlplus -v
-    encrypted_dockercfg_path: dockercfg.encrypted
-  - service: oracle-12c-se-r1
-    command: sqlplus -v
-    encrypted_dockercfg_path: dockercfg.encrypted
+    type: serial
+    steps:
+    - command: /u01/app/oracle/runOracle.sh
+    # - command: /app/.ci/create_utplsql_users.sh
+    # - command: /app/.ci/install.sh
+    # - command: /app/.ci/run_as_owner.sh
+    # - command: /app/.ci/run_as_user.sh
+  # - service: oracle-12c-se-r1
+  #   command: sqlplus -v
+  # - service: oracle-12c-se2-r2
+  #   command: sqlplus -v

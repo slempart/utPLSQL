@@ -10,13 +10,30 @@ app:
   cached: true
   volumes:
     - ./:/app
+
 oracle-11g-xe-r2:
   image: viniciusam/oracledb:11g-xe-r2
   cached: true
   volumes_from:
     - app
-oracle-12c-se-r1:
-  image: viniciusam/oracledb:12c-se-r1
-  cached: true
-  volumes_from:
-    - app
+  environment:
+    BASE_PATH: /app
+    SID: xe
+    UT3_OWNER: ut3
+    UT3_OWNER_PASSWORD: ut3
+    UT3_OWNER_TABLESPACE: users
+    UT3_USER: ut3_user
+    UT3_USER_PASSWORD: ut3
+    UT3_USER_TABLESPACE: users
+
+# oracle-12c-se-r1:
+#   image: viniciusam/oracledb:12c-se-r1
+#   cached: true
+#   volumes_from:
+#     - app
+
+# oracle-12c-se2-r2:
+#   image: viniciusam/oracledb:12c-se2-r2
+#   cached: true
+#   volumes_from:
+#     - app
