@@ -1,0 +1,67 @@
+defaults: &defaults
+  working_directory: ~/app
+  docker:
+    - image: circleci/openjdk:8
+
+version: 2
+jobs:
+  build:
+    <<: *defaults
+    steps:
+      - checkout
+
+  test_11g_xe:
+    <<: *defaults
+    environment:
+      - ORACLE_VERSION=11g-xe-r2
+      - CONNECTION_STR=127.0.0.1:1521/XE
+      - DOCKER_OPTIONS=--shm-size=1g
+    steps:
+      - checkout
+      - setup_remote_docker
+      - run: bash .circleci/setup_database.sh
+
+  test_12c_se2_r1:
+    <<: *defaults
+    environment:
+      - ORACLE_VERSION=12c-se-r1
+      - CONNECTION_STR=127.0.0.1:1521/ORCLPDB1
+    steps:
+      - checkout
+      - setup_remote_docker
+      - run: bash .circleci/setup_database.sh
+
+  test_12c_se2_r2:
+    <<: *defaults
+    environment:
+      - ORACLE_VERSION=12c-se2-r2-v2
+      - CONNECTION_STR=127.0.0.1:1521/ORCLPDB1
+      - DOCKER_OPTIONS=-v /dev/pdbs:/opt/oracle/oradata/pdbs
+    steps:
+      - checkout
+      - setup_remote_docker
+      - run: bash .circleci/setup_database.sh
+
+  deploy:
+    <<: *defaults
+    steps:
+      - run: echo 'deploy'
+workflows:
+  version: 2
+  build_test_deploy:
+    jobs:
+      - build
+      - test_11g_xe:
+          requires:
+            - build
+      - test_12c_se2_r1:
+          requires:
+            - build
+      - test_12c_se2_r2:
+          requires:
+            - build
+      - deploy:
+          requires:
+            - test_11g_xe
+            - test_12c_se2_r1
+            - test_12c_se2_r2
