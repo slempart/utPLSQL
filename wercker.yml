@@ -1,0 +1,47 @@
+box: 
+    id: viniciusam/oracledb
+    tag: client-tools
+    username: $DOCKER_USER
+    password: $DOCKER_PASSWORD
+    env:
+      UT3_OWNER: ut3
+      UT3_OWNER_PASSWORD: ut3
+      UT3_USER: ut3user
+      UT3_USER_PASSWORD: ut3
+      UT3_TABLESPACE: users
+
+build:
+  steps:
+    - script:
+        name: build
+        code: echo ok
+
+test_on_12c_se2_r1:
+  services:
+    - name: oracledb
+      id: viniciusam/oracledb
+      tag: 12c-se2-r1-v2
+      username: $DOCKER_USER
+      password: $DOCKER_PASSWORD
+  steps:
+    - script:
+        name: install utplsql
+        code: bash .wercker/install_utplsql.sh ORCLPDB1
+    - script:
+        name: run examples and tests
+        code: bash .wercker/run_examples_and_tests.sh ORCLPDB1
+
+test_on_12c_se2_r2:
+  services:
+    - name: oracledb
+      id: viniciusam/oracledb
+      tag: 12c-se-r2-v4
+      username: $DOCKER_USER
+      password: $DOCKER_PASSWORD
+  steps:
+    - script:
+        name: install utplsql
+        code: bash .wercker/install_utplsql.sh ORCLPDB1
+    - script:
+        name: run examples and tests
+        code: bash .wercker/run_examples_and_tests.sh ORCLPDB1
