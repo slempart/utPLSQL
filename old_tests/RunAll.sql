@@ -519,14 +519,17 @@ begin
   l_reporter := ut_coverage_html_reporter(a_project_name => 'utPLSQL v3');
   :html_reporter_id := l_reporter.reporter_id;
   l_reporter.after_calling_run(l_test_run);
+  l_reporter.finalize();
 
   l_reporter := ut_coverage_sonar_reporter();
   :sonar_reporter_id := l_reporter.reporter_id;
   l_reporter.after_calling_run(l_test_run);
+  l_reporter.finalize();
 
   l_reporter := ut_coveralls_reporter();
   :coveralls_reporter_id := l_reporter.reporter_id;
   l_reporter.after_calling_run(l_test_run);
+  l_reporter.finalize();
 
   ut_coverage.coverage_stop_develop();
 
@@ -534,14 +537,17 @@ begin
   l_reporter := ut_coverage_html_reporter(a_project_name => 'utPLSQL v3');
   :html_reporter_id := l_reporter.reporter_id;
   l_reporter.after_calling_run(l_test_run);
+  l_reporter.finalize();
 
   l_reporter := ut_coverage_sonar_reporter();
   :sonar_reporter_id := l_reporter.reporter_id;
   l_reporter.after_calling_run(l_test_run);
+  l_reporter.finalize();
 
   l_reporter := ut_coveralls_reporter();
   :coveralls_reporter_id := l_reporter.reporter_id;
   l_reporter.after_calling_run(l_test_run);
+  l_reporter.finalize();
 end;
 /
 
