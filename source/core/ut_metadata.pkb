@@ -147,7 +147,8 @@ create or replace package body ut_metadata as
        where s.owner = a_owner
          and s.name = a_object_name
             -- skip the declarations, consider only definitions
-         and s.type not in ('PACKAGE', 'TYPE');
+         and s.type not in ('PACKAGE', 'TYPE')
+       order by type, line;
     end if;
   
     begin
