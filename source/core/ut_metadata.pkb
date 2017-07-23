@@ -144,6 +144,9 @@ create or replace package body ut_metadata as
          and s.line = a_line_no
             -- skip the declarations, consider only definitions
          and s.type not in ('PACKAGE', 'TYPE')
+         $if not dbms_db_version.ver_le_12_2 $then
+         and s.origin_con_id = 3
+         $end
          and rownum = 1;
     exception
       when no_data_found then
