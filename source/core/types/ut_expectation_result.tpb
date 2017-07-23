@@ -18,12 +18,15 @@ create or replace type body ut_expectation_result is
 
   constructor function ut_expectation_result(self in out nocopy ut_expectation_result, a_status integer, a_description varchar2, a_message clob)
     return self as result is
+    l_start number;
   begin
     self.status          := a_status;
     self.description     := a_description;
     self.message := a_message;
     if self.status = ut_utils.tr_failure then
+      l_start := dbms_utility.get_time;
       self.caller_info   := ut_expectation_processor.who_called_expectation(dbms_utility.format_call_stack());
+      dbms_output.put_line((dbms_utility.get_time - l_start)/100||' secs take to trace failure');
     end if;
     return;
   end;
