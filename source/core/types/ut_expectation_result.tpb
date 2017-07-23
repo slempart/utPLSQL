@@ -19,13 +19,17 @@ create or replace type body ut_expectation_result is
   constructor function ut_expectation_result(self in out nocopy ut_expectation_result, a_status integer, a_description varchar2, a_message clob)
     return self as result is
     l_start timestamp := systimestamp;
+    l_start2 timestamp;
+    lstack varchar2(4000);
   begin
     self.status          := a_status;
     self.description     := a_description;
     self.message := a_message;
     if self.status = ut_utils.tr_failure then
-      
-      self.caller_info   := ut_expectation_processor.who_called_expectation(dbms_utility.format_call_stack());
+      lstack := dbms_utility.format_call_stack();
+      dbms_output.put_line(ut_utils.time_diff(systimestamp, l_start)||' secs take call stack ');
+      l_start := systimestamp;
+      self.caller_info   := ut_expectation_processor.who_called_expectation(lstack);
       dbms_output.put_line(ut_utils.time_diff(systimestamp, l_start)||' secs take to trace failure');
     end if;
     return;
