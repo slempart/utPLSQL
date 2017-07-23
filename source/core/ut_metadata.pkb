@@ -147,7 +147,7 @@ create or replace package body ut_metadata as
                     from all_source s
                    where s.owner = a_owner
                      and s.name = a_object_name
-                     and s.line = a_line_no
+                     --and s.line = a_line_no
                         -- skip the declarations, consider only definitions
                      and s.type not in ('PACKAGE', 'TYPE')
                      and trim(text) is not null) loop
