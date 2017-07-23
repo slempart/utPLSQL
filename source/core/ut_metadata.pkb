@@ -15,6 +15,10 @@ create or replace package body ut_metadata as
   See the License for the specific language governing permissions and
   limitations under the License.
   */
+  
+  type t_cache is table of all_source.text%type;
+  g_source_cache t_cache;
+  g_cached_object varchar2(500);
 
   ------------------------------
   --public definitions
@@ -130,21 +134,29 @@ create or replace package body ut_metadata as
   end;
 
   function get_source_definition_line(a_owner varchar2, a_object_name varchar2, a_line_no integer) return varchar2 is
-    l_line varchar2(4000);
-    l_cursor sys_refcursor;
+    l_line  all_source.text%type;
+    c_key constant varchar2(500) := a_owner || '.' || a_object_name;
   begin
-    open l_cursor for
-      select text from all_source s
-       where s.owner = a_owner and s.name = a_object_name and s.line = a_line_no
-          -- skip the declarations, consider only definitions
-         and s.type not in ('PACKAGE','TYPE');
-     fetch l_cursor into l_line;
-     close l_cursor;
-    return ltrim(rtrim( l_line, chr(10) ));
-  exception
-    when no_data_found then
-      return null;
+  
+    if not nvl(c_key = g_cached_object, false) then
+      g_cached_object := c_key;
+      select trim(text) text
+        bulk collect
+        into g_source_cache
+        from all_source s
+       where s.owner = a_owner
+         and s.name = a_object_name
+            -- skip the declarations, consider only definitions
+         and s.type not in ('PACKAGE', 'TYPE');
+    end if;
+  
+    begin
+      l_line := g_source_cache(a_line_no);
+    exception
+      when no_data_found then
+        null;
+    end;
+    return l_line;
   end;
-
 end;
 /
