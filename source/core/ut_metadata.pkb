@@ -136,6 +136,8 @@ create or replace package body ut_metadata as
   function get_source_definition_line(a_owner varchar2, a_object_name varchar2, a_line_no integer) return varchar2 is
     l_line  all_source.text%type;
     c_key constant varchar2(500) := a_owner || '.' || a_object_name;
+    ex_subscr_beyond_cnt exception;
+    pragma exception_init(ex_subscr_beyond_cnt, -6533);
   begin
   
     if not nvl(c_key = g_cached_object, false) then
@@ -151,10 +153,12 @@ create or replace package body ut_metadata as
        order by type, line;
     end if;
   
+    dbms_output.put_line('key - '||c_key||', line - '||a_line_no);
     begin
       l_line := g_source_cache(a_line_no);
     exception
-      when no_data_found then
+      when no_data_found or ex_subscr_beyond_cnt then
+        
         null;
     end;
     return l_line;

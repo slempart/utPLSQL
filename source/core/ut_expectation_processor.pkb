@@ -125,6 +125,7 @@ create or replace package body ut_expectation_processor as
     l_line_no                    integer;
     l_owner                      varchar2(1000);
     l_object_name                varchar2(1000);
+    l_subobject_name             varchar2(1000);
     l_result                     varchar2(4000);
     -- in 12.2 format_call_stack reportes not only package name, but also the procedure name
     -- when 11g and 12c reports only package name
@@ -134,11 +135,14 @@ create or replace package body ut_expectation_processor as
     l_caller_stack_line    := regexp_substr( a_call_stack, c_expectation_search_pattern, 1, 1, 'm', 4);
     if l_caller_stack_line like '%.%' then
       l_line_no     := to_number( regexp_substr(l_caller_stack_line,'(0x)?[0-9a-f]+\s+(\d+)',subexpression => 2) );
-      l_owner       := regexp_substr(l_caller_stack_line,'([A-Za-z0-9$#_]+)\.([A-Za-z0-9$#_]|\.)+',subexpression => 1);
-      l_object_name := regexp_substr(l_caller_stack_line,'([A-Za-z0-9$#_]+)\.(([A-Za-z0-9$#_]|\.)+)',subexpression => 2);
+      l_owner       := regexp_substr(l_caller_stack_line,'([A-Za-z0-9$#_]+)\.([A-Za-z0-9$#_]+)',subexpression => 1);
+      l_object_name := regexp_substr(l_caller_stack_line,'([A-Za-z0-9$#_]+)\.([A-Za-z0-9$#_]+)',subexpression => 2);
+      $if sys.dbms_db_version.ver_le_12_2 $then
+      l_subobject_name := regexp_substr(l_caller_stack_line,'[A-Za-z0-9$#_]+\.[A-Za-z0-9$#_]+\.([A-Za-z0-9$#_]+)',subexpression => 1);
+      $end
       if l_owner is not null and l_object_name is not null and l_line_no is not null then
-        l_result := 'at "' || l_owner || '.' || l_object_name || '", line '|| l_line_no || ' '
-                    || ut_metadata.get_source_definition_line(l_owner, l_object_name, l_line_no);
+        l_result := 'at "' || l_owner || '.' || l_object_name || case when l_subobject_name is not null then '.'||l_subobject_name end ||
+                    '", line '|| l_line_no || ' ' || ut_metadata.get_source_definition_line(l_owner, l_object_name, l_line_no);
       end if;
     end if;
     return l_result;
