@@ -134,19 +134,21 @@ create or replace package body ut_metadata as
     l_cursor sys_refcursor;
     l_start timestamp := systimestamp;
   begin
-    open l_cursor for
-      select text from all_source s
+    
+      select /*+first_rows*/ ltrim(rtrim( text, chr(10) ))
+        into l_line
+        from all_source s
        where s.owner = a_owner and s.name = a_object_name and s.line = a_line_no
           -- skip the declarations, consider only definitions
-         and s.type not in ('PACKAGE','TYPE');
-     fetch l_cursor into l_line;
-     close l_cursor;
-    return ltrim(rtrim( l_line, chr(10) ));
+         and s.type not in ('PACKAGE','TYPE')
+         and rownum = 1;
+     
+    
   exception
     when no_data_found then
-      return null;
+       null;
   end;
   dbms_output.put_line(ut_utils.time_diff(systimestamp, l_start)||' secs source line');
-
+  return l_line;
 end;
 /
