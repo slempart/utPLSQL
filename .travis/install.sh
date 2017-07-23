@@ -36,6 +36,6 @@ cd ..
 cd development
 conn $UT3_OWNER/$UT3_OWNER_PASSWORD@//$CONNECTION_STR
 @utplsql_style_check.sql
-
+exec dbms_stats.gather_dictionary_stats();
 exit
 SQL
