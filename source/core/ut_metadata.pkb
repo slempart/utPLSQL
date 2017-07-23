@@ -132,6 +132,7 @@ create or replace package body ut_metadata as
   function get_source_definition_line(a_owner varchar2, a_object_name varchar2, a_line_no integer) return varchar2 is
     l_line varchar2(4000);
     l_cursor sys_refcursor;
+    l_start timestamp := systimestamp;
   begin
     open l_cursor for
       select text from all_source s
@@ -145,6 +146,7 @@ create or replace package body ut_metadata as
     when no_data_found then
       return null;
   end;
+  dbms_output.put_line(ut_utils.time_diff(systimestamp, l_start)||' secs source line');
 
 end;
 /
