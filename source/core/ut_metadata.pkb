@@ -16,7 +16,7 @@ create or replace package body ut_metadata as
   limitations under the License.
   */
   
-  type t_cache is table of all_source.text%type index by pls_integer;
+  type t_cache is table of all_source.text%type;
   g_source_cache t_cache;
   g_cached_object varchar2(500);
 
@@ -140,20 +140,18 @@ create or replace package body ut_metadata as
   begin
   
     if not nvl(c_key = g_cached_object, false) then
-      g_source_cache.delete;
       g_cached_object := c_key;
-      for rec in (select line
-                        ,ltrim(rtrim(text, chr(10))) text
-                    from all_source s
-                   where s.owner = a_owner
-                     and s.name = a_object_name
-                     --and s.line = a_line_no
-                        -- skip the declarations, consider only definitions
-                     and s.type not in ('PACKAGE', 'TYPE')
-                     and trim(text) is not null) loop
-        g_source_cache(rec.line) := rec.text;
-      end loop;
+      select trim(text) text
+        bulk collect
+        into g_source_cache
+        from all_source s
+       where s.owner = a_owner
+         and s.name = a_object_name
+            --and s.line = a_line_no
+            -- skip the declarations, consider only definitions
+         and s.type not in ('PACKAGE', 'TYPE');
     end if;
+  
     begin
       l_line := g_source_cache(a_line_no);
     exception
