@@ -15,6 +15,10 @@ create or replace package body ut_metadata as
   See the License for the specific language governing permissions and
   limitations under the License.
   */
+  
+  type t_cache is table of all_source.text%type index by pls_integer;
+  g_source_cache t_cache;
+  g_cached_object varchar2(500);
 
   ------------------------------
   --public definitions
@@ -130,24 +134,28 @@ create or replace package body ut_metadata as
   end;
 
   function get_source_definition_line(a_owner varchar2, a_object_name varchar2, a_line_no integer) return varchar2 is
-    l_line   varchar2(4000);
-    l_cursor sys_refcursor;
-    l_start  timestamp := systimestamp;
+    l_line  all_source.text%type;
+    l_start timestamp := systimestamp;
+    c_key constant varchar2(500) := a_owner || '.' || a_object_name;
   begin
+  
+    if not nvl(c_key = g_cached_object, false) then
+      g_source_cache.delete;
+      g_cached_object := c_key;
+      for rec in (select line
+                        ,ltrim(rtrim(text, chr(10))) text
+                    from all_source s
+                   where s.owner = a_owner
+                     and s.name = a_object_name
+                     and s.line = a_line_no
+                        -- skip the declarations, consider only definitions
+                     and s.type not in ('PACKAGE', 'TYPE')
+                     and trim(text) is not null) loop
+        g_source_cache(rec.line) := rec.text;
+      end loop;
+    end if;
     begin
-      select /*+first_rows*/
-       ltrim(rtrim(text, chr(10)))
-        into l_line
-        from all_source s
-       where s.owner = a_owner
-         and s.name = a_object_name
-         and s.line = a_line_no
-            -- skip the declarations, consider only definitions
-         and s.type not in ('PACKAGE', 'TYPE')
-         $if not dbms_db_version.ver_le_12_2 $then
-         and s.origin_con_id = 3
-         $end
-         and rownum = 1;
+      l_line := g_source_cache(a_line_no);
     exception
       when no_data_found then
         null;
