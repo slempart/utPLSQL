@@ -137,7 +137,9 @@ create or replace package body ut_expectation_processor as
       l_line_no     := to_number( regexp_substr(l_caller_stack_line,'(0x)?[0-9a-f]+\s+(\d+)',subexpression => 2) );
       l_owner       := regexp_substr(l_caller_stack_line,'([A-Za-z0-9$#_]+)\.([A-Za-z0-9$#_]+)',subexpression => 1);
       l_object_name := regexp_substr(l_caller_stack_line,'([A-Za-z0-9$#_]+)\.([A-Za-z0-9$#_]+)',subexpression => 2);
-      $if sys.dbms_db_version.ver_le_12_2 $then
+      $if sys.dbms_db_version.ver_le_11 $then
+      $elsif sys.dbms_db_version.ver_le_12_1 $then
+      $else
       l_subobject_name := regexp_substr(l_caller_stack_line,'[A-Za-z0-9$#_]+\.[A-Za-z0-9$#_]+\.([A-Za-z0-9$#_]+)',subexpression => 1);
       $end
       if l_owner is not null and l_object_name is not null and l_line_no is not null then
