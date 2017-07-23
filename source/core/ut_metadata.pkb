@@ -152,8 +152,7 @@ create or replace package body ut_metadata as
          and s.type not in ('PACKAGE', 'TYPE')
        order by type, line;
     end if;
-  
-    dbms_output.put_line('key - '||c_key||', line - '||a_line_no);
+
     begin
       l_line := g_source_cache(a_line_no);
     exception
