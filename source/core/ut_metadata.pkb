@@ -130,25 +130,27 @@ create or replace package body ut_metadata as
   end;
 
   function get_source_definition_line(a_owner varchar2, a_object_name varchar2, a_line_no integer) return varchar2 is
-    l_line varchar2(4000);
+    l_line   varchar2(4000);
     l_cursor sys_refcursor;
-    l_start timestamp := systimestamp;
+    l_start  timestamp := systimestamp;
   begin
-    
-      select /*+first_rows*/ ltrim(rtrim( text, chr(10) ))
+    begin
+      select /*+first_rows*/
+       ltrim(rtrim(text, chr(10)))
         into l_line
         from all_source s
-       where s.owner = a_owner and s.name = a_object_name and s.line = a_line_no
-          -- skip the declarations, consider only definitions
-         and s.type not in ('PACKAGE','TYPE')
+       where s.owner = a_owner
+         and s.name = a_object_name
+         and s.line = a_line_no
+            -- skip the declarations, consider only definitions
+         and s.type not in ('PACKAGE', 'TYPE')
          and rownum = 1;
-     
-    
-  exception
-    when no_data_found then
-       null;
+    exception
+      when no_data_found then
+        null;
+    end;
+    dbms_output.put_line(ut_utils.time_diff(systimestamp, l_start) || ' secs source line');
+    return l_line;
   end;
-  dbms_output.put_line(ut_utils.time_diff(systimestamp, l_start)||' secs source line');
-  return l_line;
 end;
 /
