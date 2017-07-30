@@ -19,8 +19,11 @@ create or replace type ut_documentation_reporter under ut_console_reporter_base(
   failed_test_running_count integer,
   constructor function ut_documentation_reporter(self in out nocopy ut_documentation_reporter) return self as result,
   member function tab(self in ut_documentation_reporter) return varchar2,
+  member function tab(self in ut_documentation_reporter, a_text varchar2) return varchar2,
+  member function tab(self in ut_documentation_reporter, a_lines ut_varchar2_list) return ut_varchar2_list,
 
   overriding member procedure print_text(self in out nocopy ut_documentation_reporter, a_text varchar2),
+  overriding member procedure print_lines(self in out nocopy ut_documentation_reporter, a_lines ut_varchar2_list),
   overriding member procedure before_calling_suite(self in out nocopy ut_documentation_reporter, a_suite ut_logical_suite),
   overriding member procedure after_calling_test(self in out nocopy ut_documentation_reporter, a_test ut_test),
   overriding member procedure after_calling_after_all (self in out nocopy ut_documentation_reporter, a_suite in ut_logical_suite),

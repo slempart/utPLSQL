@@ -21,14 +21,40 @@ create or replace type body ut_console_reporter_base is
     ut_ansiconsole_helper.color_enabled(a_flag);
   end;
 
+  member function red(self in out nocopy ut_console_reporter_base, a_text varchar2) return varchar2 is
+  begin
+    return ut_ansiconsole_helper.red(a_text);
+  end;
+
+  member function red(self in out nocopy ut_console_reporter_base, a_lines ut_varchar2_list) return ut_varchar2_list is
+    l_lines ut_varchar2_list := a_lines;
+  begin
+    if l_lines is not null then
+      for i in 1 .. l_lines.count loop
+        l_lines(i) := red(l_lines(i));
+      end loop;
+    end if;
+    return l_lines;
+  end;
+
+  member function green(self in out nocopy ut_console_reporter_base, a_text varchar2) return varchar2 is
+  begin
+    return ut_ansiconsole_helper.green(a_text);
+  end;
+
+  member function cyan(self in out nocopy ut_console_reporter_base, a_text varchar2) return varchar2 is
+  begin
+    return ut_ansiconsole_helper.cyan(a_text);
+  end;
+
   member procedure print_red_text(self in out nocopy ut_console_reporter_base, a_text varchar2) is
   begin
-    self.print_text(ut_ansiconsole_helper.red(a_text));
+    self.print_text(red(a_text));
   end;
 
   member procedure print_green_text(self in out nocopy ut_console_reporter_base, a_text varchar2) is
   begin
-    self.print_text(ut_ansiconsole_helper.green(a_text));
+    self.print_text(green(a_text));
   end;
 
   member procedure print_yellow_text(self in out nocopy ut_console_reporter_base, a_text varchar2) is
@@ -43,7 +69,7 @@ create or replace type body ut_console_reporter_base is
 
   member procedure print_cyan_text(self in out nocopy ut_console_reporter_base, a_text varchar2) is
   begin
-    self.print_text(ut_ansiconsole_helper.cyan(a_text));
+    self.print_text(cyan(a_text));
   end;
 
   member procedure print_magenta_text(self in out nocopy ut_console_reporter_base, a_text varchar2) is

@@ -48,28 +48,26 @@ create or replace type body ut_sonar_test_reporter is
     l_message varchar2(32757);
     l_lines ut_varchar2_list;
   begin
-    self.print_text('<testCase name="'||a_test.name||'" duration="'||round(a_test.execution_time()*1000,0)||'" >');
+    ut_utils.append(l_lines, '<testCase name="'||a_test.name||'" duration="'||round(a_test.execution_time()*1000,0)||'" >');
     if a_test.result = ut_utils.tr_disabled then
-      self.print_text('<skipped message="skipped"/>');
+      ut_utils.append(l_lines, '<skipped message="skipped"/>');
     elsif a_test.result = ut_utils.tr_error then
-      self.print_text('<error message="encountered errors">');
-      self.print_text('<![CDATA[');
-      self.print_clob(ut_utils.table_to_clob(a_test.get_error_stack_traces()));
-      self.print_text(']]>');
-      self.print_text('</error>');
+      ut_utils.append(l_lines, '<error message="encountered errors">');
+      ut_utils.append(l_lines, '<![CDATA[');
+      ut_utils.append(l_lines, a_test.get_error_stack_traces());
+      ut_utils.append(l_lines, ']]>');
+      ut_utils.append(l_lines, '</error>');
     elsif a_test.result > ut_utils.tr_success then
-      self.print_text('<failure message="some expectations have failed">');
-      self.print_text('<![CDATA[');
+      ut_utils.append(l_lines, '<failure message="some expectations have failed">');
+      ut_utils.append(l_lines, '<![CDATA[');
       for i in 1 .. a_test.results.count loop
-        l_lines := a_test.results(i).get_result_lines();
-        for i in 1 .. l_lines.count loop
-          self.print_text(l_lines(i));
-        end loop;
+        ut_utils.append(l_lines, a_test.results(i).get_result_lines());
       end loop;
-      self.print_text(']]>');
-      self.print_text('</failure>');
+      ut_utils.append(l_lines, ']]>');
+      ut_utils.append(l_lines, '</failure>');
     end if;
-    self.print_text('</testCase>');
+    ut_utils.append(l_lines, '</testCase>');
+    self.print_lines(l_lines);
   end;
 
   overriding member procedure after_calling_suite(self in out nocopy ut_sonar_test_reporter, a_suite ut_logical_suite) is

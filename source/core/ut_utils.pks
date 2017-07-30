@@ -217,6 +217,8 @@ create or replace package ut_utils authid definer is
 
   procedure append_to_clob(a_src_clob in out nocopy clob, a_new_data clob);
   procedure append_to_clob(a_src_clob in out nocopy clob, a_new_data varchar2);
+  procedure append(a_src_list in out nocopy ut_varchar2_list, a_text varchar2);
+  procedure append(a_src_list in out nocopy ut_varchar2_list, a_list ut_varchar2_list);
 
   function convert_collection(a_collection ut_varchar2_list) return ut_varchar2_rows;
 

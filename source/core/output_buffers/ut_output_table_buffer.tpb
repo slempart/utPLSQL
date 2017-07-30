@@ -34,6 +34,22 @@ create or replace type body ut_output_table_buffer is
     commit;
   end;
 
+  overriding member procedure send_lines(self in ut_output_table_buffer, a_lines ut_varchar2_list) is
+  begin
+    send_lines(ut_utils.convert_collection(a_lines));
+  end;
+
+  overriding member procedure send_lines(self in ut_output_table_buffer, a_lines ut_varchar2_rows) is
+    pragma autonomous_transaction;
+  begin
+    insert
+      into ut_output_buffer_tmp(output_id, message_id, text)
+    select self.output_id, ut_message_id_seq.nextval, t.column_value
+      from table(a_lines) t
+     where t.column_value is not null;
+    commit;
+  end;
+
   overriding member procedure send_line(self in ut_output_table_buffer, a_text varchar2) is
     l_text_list  ut_varchar2_rows;
     pragma autonomous_transaction;

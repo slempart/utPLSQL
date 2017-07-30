@@ -27,17 +27,43 @@ create or replace type body ut_documentation_reporter is
   member function tab(self in ut_documentation_reporter) return varchar2 is
   begin
     return rpad(' ', self.lvl * 2);
+  end;
+
+  member function tab(self in ut_documentation_reporter, a_text varchar2) return varchar2 is
+  begin
+    if rtrim(a_text) is not null then
+      return rtrim(tab||replace(a_text,chr(10), chr(10)||tab()));
+    else
+      return a_text;
+    end if;
   end tab;
 
-  overriding member procedure print_text(self in out nocopy ut_documentation_reporter, a_text varchar2) is
+  member function tab(self in ut_documentation_reporter, a_lines ut_varchar2_list) return ut_varchar2_list is
     l_lines ut_varchar2_list;
   begin
-    if a_text is not null then
-      l_lines := ut_utils.string_to_table(a_text);
+    if a_lines is not null then
+      l_lines := a_lines;
       for i in 1 .. l_lines.count loop
-        (self as ut_output_reporter_base).print_text(tab || l_lines(i));
+        l_lines(i) := tab(l_lines(i));
       end loop;
     end if;
+    return l_lines;
+  end tab;
+
+  overriding member procedure print_lines(self in out nocopy ut_documentation_reporter, a_lines ut_varchar2_list) is
+    l_lines ut_varchar2_list := a_lines;
+  begin
+    if l_lines is not null then
+      for i in 1 .. l_lines.count loop
+        l_lines(i) := tab(l_lines(i));
+      end loop;
+    end if;
+   (self as ut_output_reporter_base).print_lines(l_lines);
+  end;
+
+  overriding member procedure print_text(self in out nocopy ut_documentation_reporter, a_text varchar2) is
+  begin
+   (self as ut_output_reporter_base).print_text(tab(a_text));
   end;
 
   overriding member procedure before_calling_suite(self in out nocopy ut_documentation_reporter, a_suite ut_logical_suite) as
@@ -84,39 +110,39 @@ create or replace type body ut_documentation_reporter is
   end;
 
   overriding member procedure after_calling_run(self in out nocopy ut_documentation_reporter, a_run in ut_run) as
+    c_nl             varchar2(1) := chr(10);
     l_summary_text   varchar2(4000);
     l_warning_index pls_integer := 0;
     -- make all warning indexes uniformly indented
     c_warnings_lpad constant integer := length(to_char(a_run.results_count.warnings_count));
 
-    procedure print_failure_for_expectation(a_expectation ut_expectation_result) is
+    function get_failure_for_expectation(a_expectation ut_expectation_result) return ut_varchar2_list is
       l_lines ut_varchar2_list;
     begin
       l_lines := a_expectation.get_result_lines();
-      for i in 1 .. l_lines.count loop
-        self.print_red_text(l_lines(i));
-      end loop;
-      self.print_cyan_text(a_expectation.caller_info);
-      self.print_text(' ');
+      l_lines := self.red(l_lines);
+      ut_utils.append(l_lines, self.cyan(a_expectation.caller_info));
+      ut_utils.append(l_lines, ' ');
+      return l_lines;
     end;
 
     procedure print_failures_for_test(a_test ut_test, a_failure_no in out nocopy integer) is
+      l_failures ut_varchar2_list := ut_varchar2_list();
     begin
       if a_test.result > ut_utils.tr_success then
         a_failure_no := a_failure_no + 1;
-        self.print_text(lpad(a_failure_no, length(failed_test_running_count) + 2, ' ') || ') ' ||
-                        nvl(a_test.name, a_test.item.form_name));
+        ut_utils.append( l_failures, lpad(a_failure_no, length(failed_test_running_count) + 2, ' ') || ') '|| nvl(a_test.name, a_test.item.form_name));
         self.lvl := self.lvl + 3;
 
-        self.print_red_text(ut_utils.table_to_clob(a_test.get_error_stack_traces()));
+        ut_utils.append(l_failures, tab(self.red(a_test.get_error_stack_traces())));
 
         for j in 1 .. a_test.results.count loop
           if a_test.results(j).status > ut_utils.tr_success then
-            print_failure_for_expectation(a_test.results(j));
+            ut_utils.append(l_failures, tab(get_failure_for_expectation(a_test.results(j))));
           end if;
         end loop;
-
         self.lvl := self.lvl - 3;
+        self.print_lines(l_failures);
       end if;
     end;
 
@@ -146,6 +172,7 @@ create or replace type body ut_documentation_reporter is
 
     procedure print_item_warnings(a_item in ut_suite_item) is
       l_items ut_suite_items;
+      l_warnings ut_varchar2_list;
     begin
       if a_item is of (ut_logical_suite) then
         l_items := treat(a_item as ut_logical_suite).items;
@@ -157,23 +184,24 @@ create or replace type body ut_documentation_reporter is
       end if;
 
       if a_item.warnings is not null and a_item.warnings.count > 0 then
-        for i in 1 .. a_item.warnings.count loop
+        l_warnings := a_item.warnings;
+        self.lvl := self.lvl + 3;
+        for i in 1 .. l_warnings.count loop
           l_warning_index := l_warning_index + 1;
-          self.print_text('  ' || lpad(l_warning_index, c_warnings_lpad) || ') ' || a_item.path);
-          self.lvl := self.lvl + 3;
-          self.print_red_text(a_item.warnings(i));
-          self.lvl := self.lvl - 3;
+          l_warnings(i) :=
+            '  ' || lpad(l_warning_index, c_warnings_lpad) || ') ' || a_item.path ||c_nl
+            ||tab(self.red(l_warnings(i)));
         end loop;
-        self.print_text(' ');
+        self.lvl := self.lvl - 3;
+        ut_utils.append(l_warnings, ' ');
+        self.print_lines(l_warnings);
       end if;
     end;
 
     procedure print_warnings(a_run in ut_run) is
     begin
       if a_run.results_count.warnings_count > 0 then
-        self.print_text(' ');
-        self.print_text('Warnings:');
-        self.print_text(' ');
+        self.print_text(' '||c_nl||'Warnings:'||c_nl||' ');
         for i in 1 .. a_run.items.count loop
           print_item_warnings(treat(a_run.items(i) as ut_suite_item));
         end loop;
@@ -183,18 +211,20 @@ create or replace type body ut_documentation_reporter is
   begin
     print_failures_details(a_run);
     print_warnings(a_run);
-    self.print_text('Finished in ' || a_run.execution_time || ' seconds');
-
     l_summary_text :=
       a_run.results_count.total_count || ' tests, '
       || a_run.results_count.failure_count || ' failed, ' || a_run.results_count.errored_count || ' errored, '
-      || a_run.results_count.disabled_count ||' disabled, ' || a_run.results_count.warnings_count || ' warning(s)';
+      || a_run.results_count.disabled_count ||' disabled, ' || a_run.results_count.warnings_count || ' warning(s)'||c_nl
+      ||' ';
     if a_run.results_count.failure_count + a_run.results_count.errored_count + a_run.results_count.warnings_count > 0 then
-      self.print_red_text(l_summary_text);
+      l_summary_text := self.red(l_summary_text);
     else
-      self.print_green_text(l_summary_text);
+      l_summary_text := self.green(l_summary_text);
     end if;
-    self.print_text(' ');
+    self.print_text(
+      'Finished in ' || a_run.execution_time || ' seconds'||c_nl
+      ||l_summary_text
+    );
   end;
 
 end;

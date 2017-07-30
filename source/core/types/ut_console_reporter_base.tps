@@ -17,6 +17,11 @@ create or replace type ut_console_reporter_base under ut_output_reporter_base(
   */
   static procedure set_color_enabled(a_flag boolean),
 
+  member function red(self in out nocopy ut_console_reporter_base, a_text varchar2) return varchar2,
+  member function red(self in out nocopy ut_console_reporter_base, a_lines ut_varchar2_list) return ut_varchar2_list,
+  member function green(self in out nocopy ut_console_reporter_base, a_text varchar2) return varchar2,
+  member function cyan(self in out nocopy ut_console_reporter_base, a_text varchar2) return varchar2,
+
   member procedure print_red_text(self in out nocopy ut_console_reporter_base, a_text varchar2),
 
   member procedure print_green_text(self in out nocopy ut_console_reporter_base, a_text varchar2),

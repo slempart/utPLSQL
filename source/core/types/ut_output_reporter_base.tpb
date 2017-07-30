@@ -34,6 +34,11 @@ create or replace type body ut_output_reporter_base is
     self.output_buffer.send_line(a_text);
   end;
 
+  member procedure print_lines(self in out nocopy ut_output_reporter_base, a_lines ut_varchar2_list) is
+  begin
+    self.output_buffer.send_lines(a_lines);
+  end;
+
   final member function get_lines(a_initial_timeout natural := null, a_timeout_sec natural) return ut_varchar2_rows pipelined is
   begin
     for i in (select column_value from table(self.output_buffer.get_lines(a_initial_timeout, a_timeout_sec))) loop
@@ -56,9 +61,7 @@ create or replace type body ut_output_reporter_base is
   begin
     if a_clob is not null and dbms_lob.getlength(a_clob) > 0 then
       l_lines := ut_utils.clob_to_table(a_clob);
-      for i in 1 .. l_lines.count loop
-        self.print_text(l_lines(i));
-      end loop;
+      self.print_lines(l_lines);
     end if;
   end;
 
